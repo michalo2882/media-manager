@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.3.1/darkly/bootstrap.min.css">
+    <title>Welcome</title>
+</head>
+<body>
+<div class="container">
+    <h2>Library</h2>
+    <button class="btn btn-primary" onclick="fetchFiles(); return false">Dbg</button>
+    <ul id="files">
+
+    </ul>
+    <h2>Add</h2>
+    <div class="row">
+        <div class="col">
+            <form>
+                <div class="form-group">
+                    <label for="name">Name</label>
+                    <input type="text" class="form-control" id="name" aria-describedby="emailHelp" placeholder="Name">
+                </div>
+                <div class="form-group">
+                    <label for="file">File</label>
+                    <input type="file" class="form-control-file" id="file">
+                </div>
+                <button class="btn btn-primary" onclick="submitFile(); return false">Submit</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+<script>
+function fetchFiles() {
+    fetch("/mediaFiles", {
+        headers: {"Accept": "application/json"}
+    }).then(resp => resp.json()).then(data => {
+        let files = $("#files");
+        files.empty();
+        for (let entry of data.content) {
+            files.append($(`<li>${entry.name}<br><em>${entry.uri}</em></li>`))
+        }
+    });
+}
+
+function submitFile() {
+    let mediaFile = {
+        name: $("#name").val(),
+        uri: $("#file").val()
+    };
+    fetch("/mediaFiles", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(mediaFile)
+    })
+    .then(resp => resp.json())
+    .then(x => fetchFiles());
+}
+
+fetchFiles();
+
+</script>
+
+</body>
+</html>
