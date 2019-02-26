@@ -2,10 +2,7 @@ package meme.demo.model;
 
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 
 @Data
@@ -20,7 +17,11 @@ public class MediaFile {
     private String name;
 
     @NotBlank
-    private String uri;
+    @Column(unique = true)
+    private String uuid;
 
+    private String fileStorageLocation;
+    private String serveUrl;
     private int duration;
+    private int views;
 }

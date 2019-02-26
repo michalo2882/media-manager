@@ -6,26 +6,26 @@
     <title>Welcome</title>
 </head>
 <body>
-<div class="container">
+<div class="container" id="app">
     <h2>Library</h2>
-    <button class="btn btn-primary" onclick="fetchFiles(); return false">Dbg</button>
-    <ul id="files">
-
+    <ul v-for="entry in files">
+        <li>{{ entry.name }} | <a v-bind:href="entry.serveUrl" >Play</a> | <a href="javascript:void(0)" v-on:click="deleteFile(entry)">Delete</a></li>
     </ul>
+
     <h2>Add</h2>
     <div class="row">
         <div class="col">
-            <form>
+            <div>
                 <div class="form-group">
                     <label for="name">Name</label>
-                    <input type="text" class="form-control" id="name" aria-describedby="emailHelp" placeholder="Name">
+                    <input type="text" class="form-control" id="name" v-model="fileName" placeholder="Name">
                 </div>
                 <div class="form-group">
                     <label for="file">File</label>
-                    <input type="file" class="form-control-file" id="file">
+                    <input type="file" class="form-control-file" id="file" v-on:change="setFileObject">
                 </div>
-                <button class="btn btn-primary" onclick="submitFile(); return false">Submit</button>
-            </form>
+                <button class="btn btn-primary" v-on:click="submitFile()">Submit</button>
+            </div>
         </div>
     </div>
 </div>
@@ -36,35 +36,56 @@
         integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
         integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
 <script>
-function fetchFiles() {
-    fetch("/mediaFiles", {
-        headers: {"Accept": "application/json"}
-    }).then(resp => resp.json()).then(data => {
-        let files = $("#files");
-        files.empty();
-        for (let entry of data.content) {
-            files.append($(`<li>${entry.name}<br><em>${entry.uri}</em></li>`))
+
+    let app = new Vue({
+        el: "#app",
+        data: {
+            files: [],
+            fileName: null,
+            fileObject: null,
+        },
+        created: async function () {
+            await this.fetchFiles();
+        },
+        methods: {
+            fetchFiles: async function() {
+                let resp = await fetch("/mediaFiles", {headers: {"Accept": "application/json"}});
+                let data = await resp.json();
+                this.files = data.content;
+            },
+            deleteFile: async function(entry) {
+                await fetch(entry.links[0].href, {method: "DELETE"});
+                await this.fetchFiles();
+            },
+            setFileObject: function(event) {
+                this.fileObject = event.target.files[0];
+            },
+            submitFile: async function() {
+                let mediaFile = {
+                    name: this.fileName,
+                };
+                const resp = await fetch("/mediaFiles", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify(mediaFile)
+                });
+                const data = await resp.json();
+
+                let formData = new FormData();
+                formData.append('uuid', data.uuid);
+                formData.append('file', this.fileObject);
+                const resp2 = await fetch("/uploadFile", {
+                    method: "POST",
+                    body: formData
+                });
+                await resp2.json();
+                await this.fetchFiles();
+            }
         }
     });
-}
-
-function submitFile() {
-    let mediaFile = {
-        name: $("#name").val(),
-        uri: $("#file").val()
-    };
-    fetch("/mediaFiles", {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(mediaFile)
-    })
-    .then(resp => resp.json())
-    .then(x => fetchFiles());
-}
-
-fetchFiles();
 
 </script>
 
