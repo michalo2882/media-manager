@@ -1,5 +1,6 @@
-package meme.demo;
+package meme.demo.controller;
 
+import meme.demo.service.FileStorageService;
 import meme.demo.model.MediaFile;
 import meme.demo.model.UploadStatus;
 import meme.demo.repository.MediaFileRepository;

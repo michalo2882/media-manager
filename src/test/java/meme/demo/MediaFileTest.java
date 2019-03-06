@@ -12,6 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
@@ -34,8 +35,11 @@ public class MediaFileTest {
     private MediaFileRepository mediaFileRepository;
 
     @Test
+    @Transactional
     public void check() throws Exception {
         MediaFile mediaFile = new MediaFile();
+        mediaFile.setName("test media file");
+        mediaFile.setUuid("abcdef");
         mediaFile.setDuration(123);
         mediaFileRepository.save(mediaFile);
 

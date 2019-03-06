@@ -9,6 +9,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource
 public interface MediaFileRepository extends CrudRepository<MediaFile, Long> {
 
-    @Query("select f from MediaFile f where f.uuid = :uuid")
+    @Query("select f from media_file f where f.uuid = :uuid")
     MediaFile findByUuid(@Param("uuid") String uuid);
 }

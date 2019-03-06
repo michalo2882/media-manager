@@ -1,4 +1,4 @@
-package meme.demo;
+package meme.demo.service;
 
 import org.springframework.web.multipart.MultipartFile;
 

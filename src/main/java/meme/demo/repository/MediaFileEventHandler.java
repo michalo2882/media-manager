@@ -1,4 +1,4 @@
-package meme.demo;
+package meme.demo.repository;
 
 import meme.demo.model.MediaFile;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;

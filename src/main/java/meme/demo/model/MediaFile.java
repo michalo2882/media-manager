@@ -4,13 +4,15 @@ import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
+import java.util.Set;
 
 @Data
-@Entity
+@Entity(name = "media_file")
+@Table(name = "media_file")
 public class MediaFile {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank
@@ -24,4 +26,7 @@ public class MediaFile {
     private String serveUrl;
     private int duration;
     private int views;
+
+    @ManyToMany(mappedBy = "mediaFileSet")
+    Set<Tag> tagSet;
 }
