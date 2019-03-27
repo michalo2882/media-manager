@@ -7,8 +7,7 @@ import javax.validation.constraints.NotBlank;
 import java.util.Set;
 
 @Data
-@Entity(name = "media_file")
-@Table(name = "media_file")
+@Entity
 public class MediaFile {
 
     @Id
@@ -29,4 +28,7 @@ public class MediaFile {
 
     @ManyToMany(mappedBy = "mediaFileSet")
     Set<Tag> tagSet;
+
+    @ManyToOne
+    User owner;
 }

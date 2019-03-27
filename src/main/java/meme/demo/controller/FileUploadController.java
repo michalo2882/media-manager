@@ -20,19 +20,4 @@ public class FileUploadController {
     @Autowired
     MediaFileRepository mediaFileRepository;
 
-    @PostMapping("/uploadFile")
-    public UploadStatus uploadFile(@RequestParam("uuid") String uuid, @RequestParam("file") MultipartFile file) {
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        String storageLocation = fileStorageService.store(file, uuid);
-
-        MediaFile mediaFile = mediaFileRepository.findByUuid(uuid);
-        mediaFile.setFileStorageLocation(storageLocation);
-        mediaFile.setServeUrl("/serve/" + uuid + "/" + fileName);
-        mediaFileRepository.save(mediaFile);
-
-        UploadStatus status = new UploadStatus();
-        status.setOk(true);
-        status.setMessage("Success");
-        return status;
-    }
 }

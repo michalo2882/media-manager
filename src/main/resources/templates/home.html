@@ -22,6 +22,7 @@
         <li>{{ entry.name }} | <a v-bind:href="entry.serveUrl" >Play</a> | <a href="javascript:void(0)" v-on:click="deleteFile(entry)">Delete</a></li>
     </ul>
 
+    <div v-if="isAuth">
     <h2>Add</h2>
     <div class="row">
         <div class="col">
@@ -37,6 +38,7 @@
                 <button class="btn btn-primary" v-on:click="submitFile()">Submit</button>
             </div>
         </div>
+    </div>
     </div>
 </div>
 
@@ -87,16 +89,16 @@
                 this.isAuth = false;
             },
             fetchUserData: async function() {
-                let resp = await fetch("/api/user/id");
+                let resp = await fetch("/api/v1/user/id");
                 if (resp.ok) {
                     this.userData = await resp.json();
                     this.isAuth = true;
                 }
             },
             fetchFiles: async function() {
-                let resp = await fetch("/mediaFiles", {headers: {"Accept": "application/json"}});
+                let resp = await fetch("/api/v1/mediaFiles", {headers: {"Accept": "application/json"}});
                 let data = await resp.json();
-                this.files = data.content;
+                this.files = data;
             },
             deleteFile: async function(entry) {
                 await fetch(entry.links[0].href, {method: "DELETE"});
@@ -109,17 +111,21 @@
                 let mediaFile = {
                     name: this.fileName,
                 };
-                const resp = await fetch("/mediaFiles", {
+                const resp = await fetch("/api/v1/mediaFiles", {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(mediaFile)
                 });
+
+                if (!resp.ok)
+                    return;
+
                 const data = await resp.json();
 
                 let formData = new FormData();
                 formData.append('uuid', data.uuid);
                 formData.append('file', this.fileObject);
-                const resp2 = await fetch("/uploadFile", {
+                const resp2 = await fetch("/api/v1/mediaFiles/upload", {
                     method: "POST",
                     body: formData
                 });
