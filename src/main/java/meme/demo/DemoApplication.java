@@ -42,6 +42,13 @@ public class DemoApplication {
     }
 
     @Bean
+    @Profile("production")
+    @ConfigurationProperties("app.datasource.production")
+    DataSource productionDataSource() {
+        return DataSourceBuilder.create().build();
+    }
+
+    @Bean
     FileStorageService fileStorageService() {
         return new LocalFileStorageService();
     }
@@ -52,6 +59,7 @@ public class DemoApplication {
     }
 
     @Bean
+    @Profile({"sandbox", "test"})
     public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource) {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         vendorAdapter.setGenerateDdl(true);
@@ -60,8 +68,23 @@ public class DemoApplication {
         Map<String, String> jpaProperties = new HashMap<>();
         jpaProperties.put("hibernate.hbm2ddl.auto", "create");
         jpaProperties.put("hibernate.hbm2ddl.import_files_sql_extractor", "org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor");
-        jpaProperties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
 
+        return createLocalContainerEntityManagerFactoryBean(dataSource, vendorAdapter, jpaProperties);
+    }
+
+    @Bean(name = "entityManagerFactory")
+    @Profile({"production"})
+    public LocalContainerEntityManagerFactoryBean productionEntityManagerFactory(DataSource dataSource) {
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        vendorAdapter.setGenerateDdl(true);
+
+        Map<String, String> jpaProperties = new HashMap<>();
+        jpaProperties.put("hibernate.hbm2ddl.auto", "update");
+
+        return createLocalContainerEntityManagerFactoryBean(dataSource, vendorAdapter, jpaProperties);
+    }
+
+    private LocalContainerEntityManagerFactoryBean createLocalContainerEntityManagerFactoryBean(DataSource dataSource, HibernateJpaVendorAdapter vendorAdapter, Map<String, String> jpaProperties) {
         LocalContainerEntityManagerFactoryBean factory = new LocalContainerEntityManagerFactoryBean();
         factory.setJpaVendorAdapter(vendorAdapter);
         factory.setPackagesToScan("meme.demo");
