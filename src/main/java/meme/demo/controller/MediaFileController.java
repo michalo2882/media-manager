@@ -4,12 +4,16 @@ import meme.demo.model.MediaFile;
 import meme.demo.model.UploadStatus;
 import meme.demo.model.User;
 import meme.demo.repository.MediaFileRepository;
+import meme.demo.repository.MediaFileResourceAssembler;
 import meme.demo.repository.UserRepository;
 import meme.demo.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.Resources;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,8 +22,10 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static meme.demo.utils.Utils.createRandomUuidString;
+import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
 @RestController
 @RequestMapping("/api/v1/mediaFiles")
@@ -29,25 +35,49 @@ public class MediaFileController {
     MediaFileRepository mediaFileRepository;
 
     @Autowired
+    MediaFileResourceAssembler mediaFileResourceAssembler;
+
+    @Autowired
     FileStorageService fileStorageService;
 
     @Autowired
     UserRepository userRepository;
 
     @GetMapping("")
-    public List<MediaFile> getRecent() {
+    public Resources<Resource<MediaFile>> getRecent() {
         PageRequest pageRequest = PageRequest.of(0, 10);
-        return mediaFileRepository.findByOrderByIdDesc(pageRequest);
+        List<Resource<MediaFile>> mediaFiles =  mediaFileRepository
+                .findByOrderByIdDesc(pageRequest).stream()
+                .map(mediaFileResourceAssembler::toResource)
+                .collect(Collectors.toList());
+        return new Resources<>(mediaFiles,
+            linkTo(methodOn(MediaFileController.class).getRecent()).withSelfRel());
+    }
+
+    @GetMapping("/{id}")
+    public Resource<MediaFile> getDetails(@PathVariable Long id) {
+        MediaFile mediaFile =  mediaFileRepository.findById(id)
+                .orElseThrow(() -> new MediaFileNotFoundException(id));
+        return mediaFileResourceAssembler.toResource(mediaFile);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(@PathVariable Long id) {
+        MediaFile mediaFile =  mediaFileRepository.findById(id)
+                .orElseThrow(() -> new MediaFileNotFoundException(id));
+        mediaFileRepository.delete(mediaFile);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("")
     @Secured("ROLE_USER")
-    public MediaFile create(@RequestBody MediaFile mediaFile) {
+    public Resource<MediaFile> create(@RequestBody MediaFile mediaFile) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         User user = userRepository.findByName(authentication.getName());
         mediaFile.setUuid(createRandomUuidString());
         mediaFile.setOwner(user);
-        return mediaFileRepository.save(mediaFile);
+        return mediaFileResourceAssembler.toResource(
+                mediaFileRepository.save(mediaFile));
     }
 
     @PostMapping("/upload")

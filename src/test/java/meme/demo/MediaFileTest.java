@@ -43,13 +43,13 @@ public class MediaFileTest {
         mediaFile.setDuration(123);
         mediaFileRepository.save(mediaFile);
 
-        mvc.perform(get("/mediaFiles").accept("application/json"))
+        mvc.perform(get("/api/v1/mediaFiles").accept("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("application/json"))
                 .andExpect(jsonPath("$._embedded.mediaFiles", hasSize(1)))
                 .andExpect(jsonPath("$._embedded.mediaFiles[0].duration", is(equalTo(123))));
 
-        mvc.perform(get("/mediaFiles/1").accept("application/json"))
+        mvc.perform(get("/api/v1/mediaFiles/1").accept("application/json"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("application/json"))
                 .andExpect(jsonPath("$.duration", is(equalTo(123))));

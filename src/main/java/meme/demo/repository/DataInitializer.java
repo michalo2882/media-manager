@@ -6,6 +6,7 @@ import meme.demo.model.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -14,6 +15,7 @@ import java.util.Collections;
 import java.util.HashSet;
 
 @Component
+@Profile("sandbox")
 public class DataInitializer {
 
     static final Logger log = LogManager.getLogger(DataInitializer.class.getName());

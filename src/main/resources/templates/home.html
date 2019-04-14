@@ -97,11 +97,13 @@
             },
             fetchFiles: async function() {
                 let resp = await fetch("/api/v1/mediaFiles", {headers: {"Accept": "application/json"}});
-                let data = await resp.json();
-                this.files = data;
+                if (resp.ok) {
+                    let data = await resp.json();
+                    this.files = data._embedded.mediaFiles;
+                }
             },
             deleteFile: async function(entry) {
-                await fetch(entry.links[0].href, {method: "DELETE"});
+                await fetch(entry._links.self.href, {method: "DELETE"});
                 await this.fetchFiles();
             },
             setFileObject: function(event) {
