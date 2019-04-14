@@ -31,4 +31,16 @@ public class MediaFile {
 
     @ManyToOne
     User owner;
+
+    public MediaFile() {
+    }
+
+    public MediaFile(String uuid, String name, String fileStorageLocation, String serveUrl, int duration, User owner) {
+        this.uuid = uuid;
+        this.name = name;
+        this.fileStorageLocation = fileStorageLocation;
+        this.serveUrl = serveUrl;
+        this.duration = duration;
+        this.owner = owner;
+    }
 }

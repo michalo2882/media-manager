@@ -4,6 +4,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -18,5 +19,5 @@ public class User {
     private String password;
 
     @ManyToMany
-    private List<Role> roles;
+    private Set<Role> roles;
 }

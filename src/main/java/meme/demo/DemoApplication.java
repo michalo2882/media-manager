@@ -59,7 +59,6 @@ public class DemoApplication {
 
         Map<String, String> jpaProperties = new HashMap<>();
         jpaProperties.put("hibernate.hbm2ddl.auto", "create");
-        jpaProperties.put("hibernate.hbm2ddl.import_files", "/import.sql");
         jpaProperties.put("hibernate.hbm2ddl.import_files_sql_extractor", "org.hibernate.tool.hbm2ddl.MultipleLinesSqlCommandExtractor");
         jpaProperties.put("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
 
