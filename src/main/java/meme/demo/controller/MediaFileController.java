@@ -1,5 +1,6 @@
 package meme.demo.controller;
 
+import meme.demo.component.AuthenticationDetailsProvider;
 import meme.demo.model.MediaFile;
 import meme.demo.model.UploadStatus;
 import meme.demo.model.User;
@@ -8,9 +9,6 @@ import meme.demo.repository.MediaFileResourceAssembler;
 import meme.demo.repository.UserRepository;
 import meme.demo.service.FileStorageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.Resources;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +19,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,7 +27,7 @@ import static meme.demo.utils.Utils.createRandomUuidString;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.*;
 
 @RestController
-@RequestMapping("/api/v1/mediaFiles")
+@RequestMapping(value = "/api/v1/mediaFiles", produces = "application/json")
 public class MediaFileController {
 
     @Autowired
@@ -43,25 +42,39 @@ public class MediaFileController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    AuthenticationDetailsProvider authenticationDetailsProvider;
+
     @GetMapping("")
     public Resources<Resource<MediaFile>> getRecent() {
-        PageRequest pageRequest = PageRequest.of(0, 10);
-        List<Resource<MediaFile>> mediaFiles =  mediaFileRepository
-                .findByOrderByIdDesc(pageRequest).stream()
+        User user = authenticationDetailsProvider.getCurrentUser();
+
+        List<Resource<MediaFile>> mediaFiles;
+        if (user != null) {
+            mediaFiles =  mediaFileRepository
+                .findByOwner(user).stream()
                 .map(mediaFileResourceAssembler::toResource)
                 .collect(Collectors.toList());
+        }
+        else {
+            mediaFiles = new ArrayList<>();
+        }
+
         return new Resources<>(mediaFiles,
             linkTo(methodOn(MediaFileController.class).getRecent()).withSelfRel());
     }
 
     @GetMapping("/{id}")
     public Resource<MediaFile> getDetails(@PathVariable Long id) {
-        MediaFile mediaFile =  mediaFileRepository.findById(id)
+        User user = authenticationDetailsProvider.getCurrentUser();
+
+        MediaFile mediaFile =  mediaFileRepository.findByIdAndOwner(id, user)
                 .orElseThrow(() -> new MediaFileNotFoundException(id));
         return mediaFileResourceAssembler.toResource(mediaFile);
     }
 
     @DeleteMapping("/{id}")
+    @Secured("ROLE_USER")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         MediaFile mediaFile =  mediaFileRepository.findById(id)
                 .orElseThrow(() -> new MediaFileNotFoundException(id));
